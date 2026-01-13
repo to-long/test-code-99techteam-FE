@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@r2wc/react-to-web-component": "^2.1.0",
     "framer-motion": "^12.23.25",
     "i": "^0.3.7",
@@ -23,6 +24,7 @@
     "react-hook-form": "^7.71.0",
     "react-hotkeys-hook": "^5.2.1",
     "use-debounce": "^10.0.6",
+    "yup": "^1.7.1",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { motion } from 'framer-motion';
 import { useTokens, type Token } from '../hooks/useTokens';
 import { useSwapValidation } from '../hooks/useSwapValidation';
@@ -16,26 +17,46 @@ export function SwapForm() {
   const [toToken, setToToken] = useState<Token | null>(null);
   const [isSwapping, setIsSwapping] = useState(false);
 
-  const { deductBalance, addBalance } = useWalletStore();
+  const { deductBalance, addBalance, getBalance } = useWalletStore();
+
+  // Get wallet balance for selected token
+  const walletBalance = fromToken ? getBalance(fromToken.currency) : 0;
+
+  // Get validation schema
+  const { schema } = useSwapValidation({ walletBalance });
 
   const {
     handleSubmit,
     watch,
     setValue,
+    formState: { errors, isValid },
+    setError,
+    clearErrors,
   } = useForm<SwapFormData>({
     defaultValues: { fromAmount: '' },
     mode: 'onChange',
+    resolver: yupResolver(schema),
   });
 
   const fromAmount = watch('fromAmount');
 
-  // Use validation hook
-  const {
-    walletBalance,
-    exceedsBalance,
-    canSubmit,
-    validationResult,
-  } = useSwapValidation({ fromToken, toToken, fromAmount });
+  // Re-validate when schema dependencies change (balance)
+  useEffect(() => {
+    if (fromAmount) {
+      schema
+        .validate({ fromAmount })
+        .then(() => clearErrors('fromAmount'))
+        .catch((err) => {
+          setError('fromAmount', { type: 'manual', message: err.message });
+        });
+    } else {
+      clearErrors('fromAmount');
+    }
+  }, [walletBalance, fromAmount, schema, setError, clearErrors]);
+
+  // Derived states
+  const hasValidTokens = fromToken && toToken && fromToken.currency !== toToken.currency;
+  const canSubmit = isValid && hasValidTokens;
 
   const toAmount = useMemo(() => {
     if (!fromToken || !toToken || !fromAmount || isNaN(Number(fromAmount))) return '';
@@ -89,7 +110,6 @@ export function SwapForm() {
 
   const getButtonText = () => {
     if (isSwapping) return null; // Will show spinner
-    if (exceedsBalance) return 'Insufficient Balance';
     return 'Confirm Swap';
   };
 
@@ -108,7 +128,7 @@ export function SwapForm() {
         className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 shadow-2xl"
       >
         {/* From Section */}
-        <div className={`bg-black/20 rounded-2xl p-4 mb-2 ${exceedsBalance ? 'ring-2 ring-amber-500/50' : ''}`}>
+        <div className={`bg-black/20 rounded-2xl p-4 mb-2 ${errors.fromAmount ? 'ring-2 ring-red-500/50' : ''}`}>
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs font-medium text-white/50 uppercase tracking-wider">You Pay</span>
             <div className="flex items-center gap-2">
@@ -136,30 +156,18 @@ export function SwapForm() {
               value={fromAmount}
               onChange={handleAmountChange}
               className={`flex-1 bg-transparent text-3xl font-semibold text-white placeholder-white/30 focus:outline-none min-w-0 ${
-                exceedsBalance ? 'text-amber-400' : ''
+                errors.fromAmount ? 'text-red-400' : ''
               }`}
             />
             <TokenSelector tokens={fromTokenOptions} selected={fromToken} onSelect={setFromToken} />
           </div>
           {/* Validation Error */}
-          {validationResult.error && (
-            <p className="text-xs text-red-400 mt-2">{validationResult.error}</p>
+          {errors.fromAmount && (
+            <p className="text-xs text-red-400 mt-2">
+              {errors.fromAmount.message}
+            </p>
           )}
         </div>
-
-        {/* Balance Warning */}
-        {validationResult.warning && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="px-4 py-2 bg-amber-500/20 border border-amber-500/30 rounded-xl mb-2 flex items-center gap-2"
-          >
-            <svg className="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <p className="text-sm text-amber-300">{validationResult.warning}</p>
-          </motion.div>
-        )}
 
         {/* Swap Button */}
         <div className="flex justify-center -my-4 relative z-10">
