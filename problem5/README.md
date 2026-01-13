@@ -1,4 +1,4 @@
-# Backend API
+# Problem 5: Backend API
 
 A REST API built with Hono and SQL.js for managing stacks and cards.
 
@@ -8,6 +8,40 @@ A REST API built with Hono and SQL.js for managing stacks and cards.
 - **Framework**: [Hono](https://hono.dev/) - Fast, lightweight web framework
 - **Database**: [SQL.js](https://sql.js.org/) - SQLite in JavaScript
 - **Documentation**: Swagger/OpenAPI (auto-generated from JSDoc)
+
+## Prerequisites
+
+Before running this project, make sure you have the following installed globally:
+
+### 1. Install Bun
+
+```bash
+# macOS/Linux
+curl -fsSL https://bun.sh/install | bash
+
+# Windows (via PowerShell)
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+
+Verify installation:
+```bash
+bun --version
+```
+
+### 2. Install pnpm
+
+```bash
+# Using npm
+npm install -g pnpm
+
+# Or using Homebrew (macOS)
+brew install pnpm
+```
+
+Verify installation:
+```bash
+pnpm --version
+```
 
 ## Getting Started
 
