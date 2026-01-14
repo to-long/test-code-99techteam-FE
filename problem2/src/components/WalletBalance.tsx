@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useWalletStore } from '../store/useWalletStore';
+import { useMemo, useState } from 'react';
 import { tokenIcons } from '../constants';
+import { useWalletStore } from '../store/useWalletStore';
 
 interface WalletTokenDisplay {
   currency: string;
@@ -11,17 +11,21 @@ interface WalletTokenDisplay {
   usdValue: number;
 }
 
-export function WalletBalance() {
+interface WalletBalanceProps {
+  onClose?: () => void;
+}
+
+export function WalletBalance({ onClose }: WalletBalanceProps) {
   const [imgError, setImgError] = useState<Set<string>>(new Set());
   const { walletTokens, exchangeRates } = useWalletStore();
 
   const walletTokensDisplay = useMemo(() => {
     const priceMap = new Map<string, number>();
-    exchangeRates.forEach((rate) => {
+    for (const rate of exchangeRates) {
       if (!priceMap.has(rate.currency)) {
         priceMap.set(rate.currency, rate.price);
       }
-    });
+    }
 
     return walletTokens
       .map((token) => {
@@ -70,9 +74,9 @@ export function WalletBalance() {
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-2xl flex flex-col h-[520px]">
+    <div className="bg-white/10 backdrop-blur-2xl border-l border-white/20 shadow-2xl flex flex-col h-full">
       {/* Header - Fixed */}
-      <div className="flex items-center justify-between p-5 border-b border-white/10">
+      <div className="flex items-center justify-between p-4 md:p-5 border-b border-white/10">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
             <svg
@@ -80,6 +84,7 @@ export function WalletBalance() {
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -91,11 +96,36 @@ export function WalletBalance() {
           </div>
           <span className="text-white font-semibold">My Wallet</span>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-white/50">Total Balance</p>
-          <p className="text-lg font-bold text-white">
-            ${totalUsdValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-xs text-white/50">Total Balance</p>
+            <p className="text-lg font-bold text-white">
+              ${totalUsdValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            </p>
+          </div>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-colors"
+              aria-label="Close wallet"
+            >
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
