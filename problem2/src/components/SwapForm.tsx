@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { motion } from 'framer-motion';
-import { useTokens, type Token } from '../hooks/useTokens';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useSwapValidation } from '../hooks/useSwapValidation';
+import { type Token, useTokens } from '../hooks/useTokens';
 import { useWalletStore } from '../store/useWalletStore';
 import { TokenSelector } from './TokenSelector';
 
@@ -168,7 +168,7 @@ export function SwapForm() {
             onClick={handleSwapTokens}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/30 border-2 border-slate-900/50"
+            className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/30 border-2 border-slate-900/30"
           >
             <svg
               className="w-5 h-5 text-white"
@@ -243,7 +243,7 @@ export function SwapForm() {
             <span className="flex items-center justify-center gap-2">
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
                 className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
               />
               Swapping...

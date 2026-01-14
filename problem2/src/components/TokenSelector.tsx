@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import type { Token } from '../hooks/useTokens';
 
 interface TokenSelectorProps {
@@ -75,21 +75,24 @@ export function TokenSelector({ tokens, selected, onSelect, disabled }: TokenSel
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
+        className="flex items-center gap-1.5 xs:gap-2 px-2 xs:px-3 py-1.5 xs:py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg xs:rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px] xs:min-w-[140px]"
       >
         {selected ? (
           <>
-            <TokenIcon token={selected} size={24} />
-            <span className="font-semibold text-white">{selected.currency}</span>
+            <TokenIcon token={selected} size={20} />
+            <span className="font-semibold text-white text-sm xs:text-base">
+              {selected.currency}
+            </span>
           </>
         ) : (
-          <span className="text-white/60">Select</span>
+          <span className="text-white/60 text-sm xs:text-base">Select</span>
         )}
         <svg
-          className={`ml-auto w-4 h-4 text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`ml-auto w-3.5 h-3.5 xs:w-4 xs:h-4 text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
@@ -102,23 +105,24 @@ export function TokenSelector({ tokens, selected, onSelect, disabled }: TokenSel
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: openUpward ? 10 : -10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className={`absolute z-50 w-64 right-0 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden ${
+            className={`absolute z-50 w-52 xs:w-64 right-0 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl xs:rounded-2xl shadow-2xl overflow-hidden ${
               openUpward ? 'bottom-full mb-2' : 'top-full mt-2'
             }`}
           >
-            <div className="p-3 border-b border-white/10">
+            <div className="p-2 xs:p-3 border-b border-white/10">
               <input
                 type="text"
                 placeholder="Search tokens..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 focus:outline-none focus:border-violet-500/50"
-                autoFocus
+                className="w-full px-2 xs:px-3 py-1.5 xs:py-2 bg-white/5 border border-white/10 rounded-lg text-xs xs:text-sm text-white placeholder-white/40 focus:outline-none focus:border-violet-500/50"
               />
             </div>
-            <div className="max-h-64 overflow-y-auto scrollbar-hide">
+            <div className="max-h-52 xs:max-h-64 overflow-y-auto scrollbar-hide">
               {filteredTokens.length === 0 ? (
-                <div className="px-4 py-6 text-center text-white/40 text-sm">No tokens found</div>
+                <div className="px-3 xs:px-4 py-4 xs:py-6 text-center text-white/40 text-xs xs:text-sm">
+                  No tokens found
+                </div>
               ) : (
                 filteredTokens.map((token) => (
                   <button
@@ -129,22 +133,25 @@ export function TokenSelector({ tokens, selected, onSelect, disabled }: TokenSel
                       setIsOpen(false);
                       setSearch('');
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors ${
+                    className={`w-full flex items-center gap-2 xs:gap-3 px-3 xs:px-4 py-2 xs:py-3 hover:bg-white/10 transition-colors ${
                       selected?.currency === token.currency ? 'bg-violet-500/20' : ''
                     }`}
                   >
-                    <TokenIcon token={token} size={36} />
-                    <div className="text-left flex-1">
-                      <div className="font-medium text-white">{token.currency}</div>
-                      <div className="text-xs text-white/50">
+                    <TokenIcon token={token} size={28} />
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="font-medium text-white text-sm xs:text-base truncate">
+                        {token.currency}
+                      </div>
+                      <div className="text-[10px] xs:text-xs text-white/50">
                         ${token.price.toLocaleString(undefined, { maximumFractionDigits: 4 })}
                       </div>
                     </div>
                     {selected?.currency === token.currency && (
                       <svg
-                        className="w-5 h-5 text-violet-400"
+                        className="w-4 h-4 xs:w-5 xs:h-5 text-violet-400 flex-shrink-0"
                         fill="currentColor"
                         viewBox="0 0 20 20"
+                        aria-hidden="true"
                       >
                         <path
                           fillRule="evenodd"
