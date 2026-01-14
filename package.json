@@ -12,13 +12,7 @@
     "problem2:test": "pnpm --filter fe test:run",    
 
     "problem3": "ts-node problem3/index.ts",
-    "test:3": "vitest run problem3",
-
-    "problem4": "ts-node problem4/index.ts",
-    "test:4": "vitest run problem4",
-    
-    "problem5": "ts-node problem5/index.ts",    
-    "test:5": "vitest run problem5"
+    "test:3": "vitest run problem3"
   },
   "dependencies": {
     "react": "^18.2.0",
