@@ -12,7 +12,9 @@ export function SwapForm() {
     fromTokenOptions,
     toTokenOptions,
     fromAmount,
+    formattedFromAmount,
     toAmount,
+    formattedToAmount,
     walletBalance,
     exchangeRate,
     errors,
@@ -63,8 +65,8 @@ export function SwapForm() {
             <input
               type="text"
               inputMode="decimal"
-              placeholder="0.00"
-              value={fromAmount}
+              placeholder="0,00"
+              value={formattedFromAmount}
               onChange={handleAmountChange}
               className={`flex-1 bg-transparent text-3xl font-semibold text-white placeholder-white/30 focus:outline-none min-w-0 ${
                 errors.fromAmount ? 'text-amber-400' : ''
@@ -122,8 +124,8 @@ export function SwapForm() {
           <div className="flex items-center gap-3">
             <input
               type="text"
-              placeholder="0.00"
-              value={toAmount}
+              placeholder="0,00"
+              value={formattedToAmount}
               readOnly
               className="flex-1 bg-transparent text-3xl font-semibold text-white placeholder-white/30 focus:outline-none cursor-default min-w-0"
             />

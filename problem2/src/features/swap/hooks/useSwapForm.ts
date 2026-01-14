@@ -1,6 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { formatEuropeanNumber, parseEuropeanNumber } from '../../../shared/utils/formatNumber';
 import { useWalletStore } from '../../wallet';
 import { useSwapValidation } from './useSwapValidation';
 import { type Token, useTokens } from './useTokens';
@@ -100,11 +101,28 @@ export function useSwapForm() {
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow empty, numbers, and decimal point
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      setValue('fromAmount', value);
+    // Allow empty, numbers, dots (thousands), and comma (decimal separator)
+    if (value === '' || /^[\d.,]*$/.test(value)) {
+      // Parse European format to standard format (dot as decimal)
+      const parsedValue = parseEuropeanNumber(value);
+      // Validate it's a valid number format
+      if (parsedValue === '' || /^\d*\.?\d*$/.test(parsedValue)) {
+        setValue('fromAmount', parsedValue);
+      }
     }
   };
+
+  // Format fromAmount for display (European format)
+  const formattedFromAmount = useMemo(() => {
+    if (!fromAmount) return '';
+    return formatEuropeanNumber(fromAmount);
+  }, [fromAmount]);
+
+  // Format toAmount for display (European format)
+  const formattedToAmount = useMemo(() => {
+    if (!toAmount) return '';
+    return formatEuropeanNumber(toAmount);
+  }, [toAmount]);
 
   return {
     // Tokens
@@ -118,7 +136,9 @@ export function useSwapForm() {
 
     // Amounts
     fromAmount,
+    formattedFromAmount,
     toAmount,
+    formattedToAmount,
     walletBalance,
     exchangeRate,
 
