@@ -5,7 +5,7 @@ export const Card = ({ children, className, ...props }: HTMLAttributes<HTMLDivEl
     return (
         <div 
             className={cn(
-                "relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl",
+                "relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl p-1 shadow-2xl",
                  // Glossy overlay
                 "before:absolute before:inset-0 before:rounded-3xl before:bg-gradient-to-br before:from-white/10 before:via-transparent before:to-transparent before:pointer-events-none",
                  // Rim lighting

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import useSWR from 'swr';
 import { tokenIcons } from '../utils/constants';
 
@@ -21,8 +22,10 @@ export const useTokenPrices = () => {
     revalidateOnFocus: false,
   });
 
-  const tokens = data
-    ? data.reduce<Token[]>((acc, current) => {
+  const tokens = useMemo(() => {
+    if (!data) return [];
+    
+    const processed = data.reduce<Token[]>((acc, current) => {
         // Check if we already have this token in our accumulated list
         const existingIndex = acc.findIndex((t) => t.currency === current.currency);
         
@@ -34,17 +37,13 @@ export const useTokenPrices = () => {
                   icon: tokenIcons[current.currency],
                 });
             }
-        } else {
-            // If exists, checks if the new one is more recent? 
-            // Assuming the list is whatever, let's just keep the first one found or we could update price.
-            // Let's rely on the first entry being valid enough for this mock.
         }
         return acc;
-      }, [])
-    : [];
+      }, []);
 
-  // Sort tokens alphabetically by currency symbol for better UX
-  tokens.sort((a, b) => a.currency.localeCompare(b.currency));
+    // Sort tokens alphabetically by currency symbol for better UX
+    return processed.sort((a, b) => a.currency.localeCompare(b.currency));
+  }, [data]);
 
   return {
     tokens,
