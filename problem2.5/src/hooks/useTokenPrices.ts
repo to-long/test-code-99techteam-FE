@@ -24,22 +24,22 @@ export const useTokenPrices = () => {
 
   const tokens = useMemo(() => {
     if (!data) return [];
-    
+
     const processed = data.reduce<Token[]>((acc, current) => {
-        // Check if we already have this token in our accumulated list
-        const existingIndex = acc.findIndex((t) => t.currency === current.currency);
-        
-        if (existingIndex === -1) {
-             // If not exists and has icon, add it
-            if (tokenIcons[current.currency]) {
-                acc.push({
-                  ...current,
-                  icon: tokenIcons[current.currency],
-                });
-            }
+      // Check if we already have this token in our accumulated list
+      const existingIndex = acc.findIndex((t) => t.currency === current.currency);
+
+      if (existingIndex === -1) {
+        // If not exists and has icon, add it
+        if (tokenIcons[current.currency]) {
+          acc.push({
+            ...current,
+            icon: tokenIcons[current.currency],
+          });
         }
-        return acc;
-      }, []);
+      }
+      return acc;
+    }, []);
 
     // Sort tokens alphabetically by currency symbol for better UX
     return processed.sort((a, b) => a.currency.localeCompare(b.currency));
