@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, Search } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
 import type { Token } from '../hooks/useTokenPrices';
@@ -11,12 +12,26 @@ interface TokenSelectProps {
   label?: string;
   error?: string;
   className?: string;
+  excludeToken?: string;
+  enableQuickSelect?: boolean;
 }
 
+const POPULAR_TOKENS = ['ETH', 'USDC', 'WBTC', 'ATOM', 'BUSD', 'OSMO', 'OKB'];
+
 export const TokenSelect = memo(
-  ({ value, onChange, tokens, label, error, className }: TokenSelectProps) => {
+  ({
+    value,
+    onChange,
+    tokens,
+    label,
+    error,
+    className,
+    excludeToken,
+    enableQuickSelect = false,
+  }: TokenSelectProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
+    const [isHovering, setIsHovering] = useState(false);
 
     const selectedToken = useMemo(() => tokens.find((t) => t.currency === value), [tokens, value]);
 
@@ -25,51 +40,104 @@ export const TokenSelect = memo(
       [tokens, search]
     );
 
+    const quickAccessTokens = useMemo(() => {
+      // Show popular tokens that are NOT excluded
+      // We keep the currently selected one in the list for visual stability
+      return tokens
+        .filter((t) => POPULAR_TOKENS.includes(t.currency) && t.currency !== excludeToken)
+        .slice(0, 5);
+    }, [tokens, excludeToken]);
+
     const handleSelect = (currency: string) => {
       onChange(currency);
       setIsOpen(false);
       setSearch('');
+      setIsHovering(false);
     };
 
     return (
       <>
-        <div className={clsx('flex flex-col gap-1.5', className)}>
+        <div
+          className={clsx('flex flex-col gap-1.5 relative z-20', className)}
+          onMouseEnter={() => enableQuickSelect && setIsHovering(true)}
+          onMouseLeave={() => enableQuickSelect && setIsHovering(false)}
+        >
           {label && <label className="text-sm font-medium text-gray-300 ml-1">{label}</label>}
 
-          <button
-            type="button"
-            onClick={() => setIsOpen(true)}
-            className={clsx(
-              'group relative flex items-center justify-between gap-2 pl-3 pr-2 h-10 min-w-[140px] rounded-full transition-all duration-300',
-              selectedToken
-                ? 'bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 shadow-sm'
-                : 'bg-blue-600/90 hover:bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] border border-blue-500/50',
-              error && 'border-red-500/50 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]'
-            )}
-          >
-            <div className="flex items-center gap-2">
-              {selectedToken ? (
-                <>
-                  <img
-                    src={selectedToken.icon}
-                    alt={selectedToken.currency}
-                    className="w-6 h-6 object-contain rounded-full bg-white/5"
-                  />
-                  <span className="text-base font-semibold text-white tracking-wide">
-                    {selectedToken.currency}
-                  </span>
-                </>
-              ) : (
-                <span className="text-sm font-semibold pl-1 whitespace-nowrap">Select Token</span>
-              )}
-            </div>
-            <ChevronDown
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsOpen(true)}
               className={clsx(
-                'w-4 h-4 transition-transform duration-300 opacity-70 group-hover:opacity-100',
-                isOpen ? 'rotate-180' : ''
+                'group relative flex items-center justify-between gap-2 pl-3 pr-2 h-10 min-w-[140px] rounded-full transition-all duration-300 w-full overflow-hidden',
+                // Glass Effect
+                'backdrop-blur-md',
+                // Reflection/Shine
+                'after:absolute after:inset-0 after:bg-gradient-to-b after:from-white/20 after:to-transparent after:pointer-events-none',
+                selectedToken
+                  ? 'bg-white/5 border border-white/10 hover:bg-white/10 shadow-sm'
+                  : 'bg-blue-500/30 border border-blue-400/30 hover:bg-blue-500/40 text-white shadow-[0_0_20px_rgba(37,99,235,0.2)]',
+                error && 'border-red-500/50 shadow-[0_0_0_2px_rgba(239,68,68,0.2)]'
               )}
-            />
-          </button>
+            >
+              <div className="flex items-center gap-2 overflow-hidden">
+                {selectedToken ? (
+                  <>
+                    <img
+                      src={selectedToken.icon}
+                      alt={selectedToken.currency}
+                      className="w-6 h-6 object-contain rounded-full bg-white/5 shrink-0"
+                    />
+                    <span className="text-base font-semibold text-white tracking-wide truncate">
+                      {selectedToken.currency}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm font-semibold pl-1 whitespace-nowrap">Select Token</span>
+                )}
+              </div>
+              <ChevronDown
+                className={clsx(
+                  'w-4 h-4 transition-transform duration-300 opacity-70 group-hover:opacity-100 shrink-0',
+                  isOpen ? 'rotate-180' : ''
+                )}
+              />
+            </button>
+
+            {/* Quick Select Hover Menu */}
+            <AnimatePresence>
+              {enableQuickSelect && isHovering && quickAccessTokens.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute bottom-full right-0 mb-2 h-10 flex items-center gap-1.5 z-50 pointer-events-none"
+                >
+                  <div className="flex bg-black/60 backdrop-blur-md rounded-full p-1 border border-white/10 shadow-xl pointer-events-auto">
+                    {quickAccessTokens.map((token) => (
+                      <button
+                        type="button"
+                        key={token.currency}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelect(token.currency);
+                        }}
+                        className="relative w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-all hover:scale-110 group/item"
+                        title={token.currency}
+                      >
+                        <img
+                          src={token.icon}
+                          alt={token.currency}
+                          className="w-6 h-6 object-contain rounded-full"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {error && <span className="text-xs text-red-400 ml-1 font-medium">{error}</span>}
         </div>
@@ -100,14 +168,18 @@ export const TokenSelect = memo(
                 <div className="space-y-1">
                   {filteredTokens.map((token) => {
                     const isSelected = token.currency === value;
+                    const isDisabled = token.currency === excludeToken;
                     return (
                       <button
                         key={token.currency}
-                        onClick={() => handleSelect(token.currency)}
+                        onClick={() => !isDisabled && handleSelect(token.currency)}
+                        disabled={isDisabled}
                         className={clsx(
                           'w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 group',
                           isSelected
                             ? 'bg-blue-500/10 border border-blue-500/20'
+                            : isDisabled
+                            ? 'opacity-40 cursor-not-allowed'
                             : 'hover:bg-white/5 border border-transparent hover:border-white/5'
                         )}
                       >

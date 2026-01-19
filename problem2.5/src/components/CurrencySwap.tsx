@@ -26,7 +26,7 @@ const swapSchema = z
 type SwapFormData = z.infer<typeof swapSchema>;
 
 const DEFAULT_FROM_CURRENCY = 'ETH';
-const DEFAULT_TO_CURRENCY = 'USDC';
+const DEFAULT_TO_CURRENCY = '';
 const STORAGE_KEY_FROM = 'currency-swap-from';
 const STORAGE_KEY_TO = 'currency-swap-to';
 
@@ -52,8 +52,8 @@ export const CurrencySwap = () => {
     mode: 'onChange',
     defaultValues: {
       amount: undefined,
-      fromCurrency: localStorage.getItem(STORAGE_KEY_FROM) || DEFAULT_FROM_CURRENCY,
-      toCurrency: localStorage.getItem(STORAGE_KEY_TO) || DEFAULT_TO_CURRENCY,
+      fromCurrency: sessionStorage.getItem(STORAGE_KEY_FROM) || DEFAULT_FROM_CURRENCY,
+      toCurrency: sessionStorage.getItem(STORAGE_KEY_TO) || DEFAULT_TO_CURRENCY,
     },
   });
 
@@ -63,8 +63,8 @@ export const CurrencySwap = () => {
 
   // Persist selections
   useEffect(() => {
-    if (fromCurrency) localStorage.setItem(STORAGE_KEY_FROM, fromCurrency);
-    if (toCurrency) localStorage.setItem(STORAGE_KEY_TO, toCurrency);
+    if (fromCurrency) sessionStorage.setItem(STORAGE_KEY_FROM, fromCurrency);
+    if (toCurrency) sessionStorage.setItem(STORAGE_KEY_TO, toCurrency);
   }, [fromCurrency, toCurrency]);
 
   // Local state for display values
@@ -136,7 +136,7 @@ export const CurrencySwap = () => {
     // The useEffect above will trigger recalculation
   };
 
-  const onSubmit = async (data: SwapFormData) => {
+  const onSubmit = async () => {
     setIsSubmitting(true);
     setSuccessMessage(null);
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -180,6 +180,9 @@ export const CurrencySwap = () => {
                 placeholder="0.00"
                 value={fromAmount}
                 onChange={(e) => handleFromChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.preventDefault();
+                }}
                 className="w-full bg-transparent text-4xl font-medium text-white placeholder-gray-600 focus:outline-none no-spinner"
                 autoComplete="off"
               />
@@ -193,6 +196,7 @@ export const CurrencySwap = () => {
                       tokens={tokens}
                       label=""
                       error={errors.fromCurrency?.message}
+                      excludeToken={toCurrency}
                     />
                   )}
                 />
@@ -254,10 +258,13 @@ export const CurrencySwap = () => {
                 placeholder="0.00"
                 value={toAmount}
                 onChange={(e) => handleToChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.preventDefault();
+                }}
                 className="w-full bg-transparent text-4xl font-medium text-white placeholder-gray-600 focus:outline-none no-spinner"
                 autoComplete="off"
               />
-              <div className="shrink-0">
+                <div className="shrink-0">
                 <Controller
                   name="toCurrency"
                   control={control}
@@ -267,6 +274,8 @@ export const CurrencySwap = () => {
                       tokens={tokens}
                       label=""
                       error={errors.toCurrency?.message}
+                      excludeToken={fromCurrency}
+                      enableQuickSelect={true}
                     />
                   )}
                 />
@@ -299,21 +308,22 @@ export const CurrencySwap = () => {
             {isSubmitting ? 'Swapping...' : 'Confirm Swap'}
           </Button>
 
-          {/* Success Message */}
-          <AnimatePresence>
-            {successMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="absolute inset-x-6 bottom-24 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-center text-sm font-medium backdrop-blur-md"
-              >
-                {successMessage}
-              </motion.div>
-            )}
-          </AnimatePresence>
         </form>
       </Card>
+
+      {/* Success Message */}
+      <AnimatePresence>
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-full left-0 w-full mt-4 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-center text-sm font-medium backdrop-blur-md z-20"
+          >
+            {successMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
